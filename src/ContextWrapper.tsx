@@ -21,12 +21,12 @@ export type ElementType = {
 };
 export type GuideType = ElementType[];
 
-const safeSetGuide = (element: GuideType): GuideState => ({ currentGuide: element });
-const safeSetElement = (element: ElementType): ElementState => ({ currentElement: element });
+const safeSetGuide = (element: GuideType) => ({ currentGuide: element, currentIndex: 0 });
+const safeSetElement = (element: ElementType) => ({ currentElement: element });
 
 type ElementState = { currentElement: ElementType };
 type GuideState = { currentGuide: GuideType };
-type State = ElementState & GuideState;
+type State = ElementState & GuideState & { currentIndex: number };
 
 export type ContextValue = ElementState & { goToNext: () => void };
 export const WalkthroughContext = React.createContext<ContextValue>({
@@ -43,24 +43,19 @@ interface Props {
 class ContextWrapper extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { currentElement: nullElement, currentGuide: [] };
+    this.state = { currentElement: nullElement, currentGuide: [], currentIndex: 0 };
   }
 
-  getCurrentElementIndex = () =>
-    this.state.currentGuide.findIndex(element => element.id === this.state.currentElement.id);
-
   setElement = (element: ElementType) => {
-    if (element.id !== this.state.currentElement.id) {
-      // clear previous element
-      this.setState(safeSetElement(nullElement));
+    // clear previous element
+    this.setState(safeSetElement(nullElement));
 
-      // after interactions and a hot sec, set current element
-      InteractionManager.runAfterInteractions(() => {
-        setTimeout(() => {
-          this.setState(safeSetElement(element));
-        }, HOT_SEC);
-      });
-    }
+    // after interactions and a hot sec, set current element
+    InteractionManager.runAfterInteractions(() => {
+      setTimeout(() => {
+        this.setState(safeSetElement(element));
+      }, HOT_SEC);
+    });
   };
 
   setGuide = (guide: GuideType, callback?: () => void) => this.setState(safeSetGuide(guide), callback);
@@ -97,11 +92,11 @@ class ContextWrapper extends Component<Props, State> {
       this.setElement(element);
     }
   };
-
   goToNext = () => {
-    const nextIndex = this.getCurrentElementIndex() + 1;
+    const nextIndex = this.state.currentIndex + 1;
 
     if (nextIndex < this.state.currentGuide.length) {
+      this.setState({ currentIndex: nextIndex });
       this.goToElement(this.state.currentGuide[nextIndex]);
     } else {
       this.setNull();
