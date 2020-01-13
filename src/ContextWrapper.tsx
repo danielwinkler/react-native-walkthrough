@@ -111,12 +111,7 @@ class ContextWrapper extends Component<Props, State> {
 
   render() {
     return (
-      <WalkthroughContext.Provider
-        value={{
-          ...this.state,
-          goToNext: this.goToNext,
-        }}
-      >
+      <WalkthroughContext.Provider value={{ ...this.state, goToNext: this.goToNext }}>
         {this.props.children}
       </WalkthroughContext.Provider>
     );
