@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/jasongaare/react-native-walkthrough#readme",
   "dependencies": {
-    "events": "3.0.0",
+    "@types/jest": "^24.0.25",
+    "@types/react-test-renderer": "^16.9.1",
+    "events": "^3.1.0",
     "react-native-walkthrough-tooltip": "1.0.2"
   },
   "peerDependencies": {
@@ -26,16 +28,25 @@
     "react-native": "^0.54.0"
   },
   "devDependencies": {
-    "@react-native-community/eslint-config": "0.0.4",
+    "@types/events": "^3.0.0",
+    "@types/react": "^16.9.17",
+    "@types/react-native": "^0.60.30",
+    "@typescript-eslint/eslint-plugin": "^2.15.0",
+    "@typescript-eslint/parser": "^2.15.0",
     "babel-core": "6.26.3",
     "babel-eslint": "8.2.3",
-    "eslint": "6.3.0",
+    "eslint": "^6.8.0",
     "eslint-config-airbnb": "16.1.0",
+    "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-import": "2.12.0",
     "eslint-plugin-jsx-a11y": "6.0.3",
     "eslint-plugin-no-mixed-operators": "1.1.1",
-    "eslint-plugin-react": "7.8.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.17.0",
     "eslint-plugin-react-native": "3.2.1",
-    "prettier-eslint": "8.8.1"
+    "prettier": "^1.19.1",
+    "prop-types": "^15.7.2",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
   }
 }

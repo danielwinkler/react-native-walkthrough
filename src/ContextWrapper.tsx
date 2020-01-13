@@ -1,43 +1,55 @@
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-import {InteractionManager} from 'react-native';
+import React, { Component } from "react";
+import { InteractionManager } from "react-native";
+import { EventEmitter } from "events";
+import { TooltipProps } from "react-native-walkthrough-tooltip";
 
 const WAIT_NO_MORE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
 const HOT_SEC = 350;
 
 const nullElement = {
-  id: null,
-  content: null,
-  placement: null,
+  id: undefined,
+  content: undefined,
+  placement: undefined,
 };
 
-const safeSetGuide = element => {
-  return {
-    currentGuide: element,
-  };
+export type ElementType = {
+  id?: string;
+  content: TooltipProps["content"];
+  placement: TooltipProps["placement"];
+  triggerEvent?: string | number;
+  tooltipProps?: TooltipProps;
 };
+export type GuideType = ElementType[];
 
-const safeSetElement = element => {
-  return {
-    currentElement: element,
-  };
-};
+const safeSetGuide = (element: GuideType): GuideState => ({ currentGuide: element });
+const safeSetElement = (element: ElementType): ElementState => ({ currentElement: element });
 
-export const WalkthroughContext = React.createContext(nullElement);
+type ElementState = { currentElement: ElementType };
+type GuideState = { currentGuide: GuideType };
+type State = ElementState & GuideState;
 
-class ContextWrapper extends Component {
-  constructor(props) {
+export type ContextValue = ElementState & { goToNext: () => void };
+export const WalkthroughContext = React.createContext<ContextValue>({
+  currentElement: nullElement,
+  goToNext: () => {
+    // default dummy method
+  },
+});
+
+interface Props {
+  eventEmitter: EventEmitter;
+}
+
+class ContextWrapper extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
-
-    this.state = {currentElement: nullElement, currentGuide: []};
+    this.state = { currentElement: nullElement, currentGuide: [] };
   }
 
   getCurrentElementIndex = () =>
-    this.state.currentGuide.findIndex(
-      element => element.id === this.state.currentElement.id,
-    );
+    this.state.currentGuide.findIndex(element => element.id === this.state.currentElement.id);
 
-  setElement = element => {
+  setElement = (element: ElementType) => {
     if (element.id !== this.state.currentElement.id) {
       // clear previous element
       this.setState(safeSetElement(nullElement));
@@ -51,22 +63,21 @@ class ContextWrapper extends Component {
     }
   };
 
-  setGuide = (guide, callback = () => {}) =>
-    this.setState(safeSetGuide(guide), callback);
+  setGuide = (guide: GuideType, callback?: () => void) => this.setState(safeSetGuide(guide), callback);
 
   setNull = () => this.setState(safeSetElement(nullElement));
 
   clearGuide = () => this.setState(safeSetGuide([]));
 
-  waitForTrigger = element => {
-    const {eventEmitter} = this.props;
+  waitForTrigger = (element: ElementType, triggerEvent: string | number) => {
+    const { eventEmitter } = this.props;
 
     const waitStart = Date.now();
     const triggerGuide = JSON.stringify(this.state.currentGuide);
 
     this.setNull();
 
-    eventEmitter.once(element.triggerEvent, () => {
+    eventEmitter.once(triggerEvent, () => {
       const waitEnd = Date.now();
       const currentGuide = JSON.stringify(this.state.currentGuide);
 
@@ -79,9 +90,9 @@ class ContextWrapper extends Component {
     });
   };
 
-  goToElement = element => {
+  goToElement = (element: ElementType) => {
     if (element.triggerEvent) {
-      this.waitForTrigger(element);
+      this.waitForTrigger(element, element.triggerEvent);
     } else {
       this.setElement(element);
     }
@@ -104,16 +115,12 @@ class ContextWrapper extends Component {
         value={{
           ...this.state,
           goToNext: this.goToNext,
-        }}>
+        }}
+      >
         {this.props.children}
       </WalkthroughContext.Provider>
     );
   }
 }
-
-ContextWrapper.propTypes = {
-  children: PropTypes.element,
-  eventEmitter: PropTypes.object,
-};
 
 export default ContextWrapper;
