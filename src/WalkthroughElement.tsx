@@ -3,13 +3,15 @@ import Tooltip, { TooltipChildrenContext, TooltipProps } from "react-native-walk
 
 import { WalkthroughContext } from "./ContextWrapper";
 
-interface Props {
-  children: (value: { tooltipDuplicate: boolean }) => ReactNode;
-  content: ReactElement;
+type UseContextT =
+  | { useTooltipChildContext: true; children: (value: { tooltipDuplicate: boolean }) => ReactNode }
+  | { useTooltipChildContext?: false; children: ReactNode };
+
+type Props = {
+  content?: ReactElement;
   id: string;
   tooltipProps?: TooltipProps;
-  useTooltipChildContext?: boolean;
-}
+} & UseContextT;
 
 const WalkthroughElement: FunctionComponent<Props> = props => {
   const elementId = props.id;
