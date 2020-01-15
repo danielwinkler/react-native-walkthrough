@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 
 const WAIT_NO_MORE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
 const HOT_SEC = 500;
@@ -10,13 +10,14 @@ const nullElement = {
   placement: null,
 };
 
-const safeSetGuide = element => {
+const safeSetGuide = (element) => {
   return {
     currentGuide: element,
+    currentIndex: 0,
   };
 };
 
-const safeSetElement = element => {
+const safeSetElement = (element) => {
   return {
     currentElement: element,
   };
@@ -33,12 +34,13 @@ class ContextWrapper extends Component {
       currentGuide: [],
       currentPossibleOutcomes: [],
       outcomeListenerStartTimestamp: null,
+      currentIndex: 0,
     };
   }
 
   getCurrentElementIndex = () =>
     this.state.currentGuide.findIndex(
-      element => element.id === this.state.currentElement.id,
+      (element) => element.id === this.state.currentElement.id
     );
 
   clearGuide = () => this.setState(safeSetGuide([]));
@@ -71,28 +73,28 @@ class ContextWrapper extends Component {
     },
   });
 
-  listenForPossibleOutcomes = element => {
+  listenForPossibleOutcomes = (element) => {
     const { eventEmitter } = this.props;
     const { possibleOutcomes } = element;
 
     if (possibleOutcomes) {
       if (!Array.isArray(possibleOutcomes)) {
         console.warn(
-          '[react-native-walkthrough] non-Array value provided to possibleOutcomes',
+          "[react-native-walkthrough] non-Array value provided to possibleOutcomes"
         );
       } else {
         this.setState(
           {
             currentPossibleOutcomes: possibleOutcomes.map(
-              this.addTimeoutCheckToOutcomeActions,
+              this.addTimeoutCheckToOutcomeActions
             ),
             outcomeListenerStartTimestamp: Date.now(),
           },
           () => {
             this.state.currentPossibleOutcomes.forEach(({ event, action }) =>
-              eventEmitter.once(event, action),
+              eventEmitter.once(event, action)
             );
-          },
+          }
         );
       }
     }
@@ -100,17 +102,15 @@ class ContextWrapper extends Component {
 
   setElementNull = () => this.setState(safeSetElement(nullElement));
 
-  setElement = element => {
-    if (element.id !== this.state.currentElement.id) {
-      // clear previous element
-      this.setElementNull();
-      this.clearCurrentPossibleOutcomes();
+  setElement = (element) => {
+    // clear previous element
+    this.setElementNull();
+    this.clearCurrentPossibleOutcomes();
 
-      // after a hot sec, set current element
-      setTimeout(() => {
-        this.setState(safeSetElement(element));
-      }, HOT_SEC);
-    }
+    // after a hot sec, set current element
+    setTimeout(() => {
+      this.setState(safeSetElement(element));
+    }, HOT_SEC);
   };
 
   setGuide = (guide, callback = () => {}) => {
@@ -118,7 +118,7 @@ class ContextWrapper extends Component {
     this.setState(safeSetGuide(guide), callback);
   };
 
-  waitForTrigger = element => {
+  waitForTrigger = (element) => {
     const { eventEmitter } = this.props;
 
     const waitStart = Date.now();
@@ -139,7 +139,7 @@ class ContextWrapper extends Component {
     });
   };
 
-  goToElement = element => {
+  goToElement = (element) => {
     if (element.triggerEvent) {
       this.waitForTrigger(element);
     } else {
@@ -147,9 +147,9 @@ class ContextWrapper extends Component {
     }
   };
 
-  goToElementWithId = id => {
+  goToElementWithId = (id) => {
     const elementWithId = this.state.currentGuide.find(
-      element => element.id === id,
+      (element) => element.id === id
     );
 
     if (elementWithId) {
@@ -165,6 +165,7 @@ class ContextWrapper extends Component {
       this.listenForPossibleOutcomes(currentElement);
       this.setElementNull();
     } else if (nextIndex < this.state.currentGuide.length) {
+      this.setState({ currentIndex: nextIndex });
       this.goToElement(this.state.currentGuide[nextIndex]);
     } else {
       this.setElementNull();
