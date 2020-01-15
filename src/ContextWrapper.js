@@ -158,8 +158,8 @@ class ContextWrapper extends Component {
   };
 
   goToNext = () => {
-    const { currentElement } = this.state;
-    const nextIndex = this.getCurrentElementIndex() + 1;
+    const { currentElement, currentIndex } = this.state;
+    const nextIndex = currentIndex + 1;
 
     if (currentElement.possibleOutcomes) {
       this.listenForPossibleOutcomes(currentElement);
