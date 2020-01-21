@@ -21,9 +21,10 @@ const nullElement = {
   placement: undefined,
 };
 
-const safeSetGuide = (element: GuideType) => ({
+const safeSetGuide = (element: GuideType, onFinish?: () => void) => ({
   currentGuide: element,
   currentIndex: 0,
+  onFinish: onFinish,
 });
 const safeSetElement = (element: ElementType) => ({currentElement: element});
 
@@ -43,6 +44,7 @@ type State = {
   currentElement: ElementType;
   currentGuide: GuideType;
   currentIndex: number;
+  onFinish?: () => void;
 };
 
 class ContextWrapper extends Component<Props, State> {
@@ -52,6 +54,7 @@ class ContextWrapper extends Component<Props, State> {
       currentElement: nullElement,
       currentGuide: [],
       currentIndex: 0,
+      onFinish: undefined,
     };
   }
 
@@ -67,12 +70,17 @@ class ContextWrapper extends Component<Props, State> {
     });
   };
 
-  setGuide = (guide: GuideType, callback?: () => void) =>
-    this.setState(safeSetGuide(guide), callback);
+  setGuideAsync = (guide: GuideType, onFinish?: () => void): Promise<void> =>
+    new Promise(resolve =>
+      this.setState(safeSetGuide(guide, onFinish), resolve)
+    );
 
   setNull = () => this.setState(safeSetElement(nullElement));
 
-  clearGuide = () => this.setState(safeSetGuide([]));
+  clearGuide = () => {
+    this.state.onFinish?.();
+    this.setState(safeSetGuide([]));
+  };
 
   waitForTrigger = (element: ElementType, triggerEvent: string | symbol) => {
     const {eventEmitter} = this.props;
